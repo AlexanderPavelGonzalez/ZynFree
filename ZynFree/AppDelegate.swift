@@ -1,13 +1,12 @@
 //
 //  AppDelegate.swift
-//  QuitTracker
+//  ZynFree
 //
 //  Created by Alexander Gonzalez on 11/20/25.
 //
 
 import UIKit
 
-@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
 

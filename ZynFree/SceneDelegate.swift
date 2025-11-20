@@ -1,6 +1,6 @@
 //
 //  SceneDelegate.swift
-//  QuitTracker
+//  ZynFree
 //
 //  Created by Alexander Gonzalez on 11/20/25.
 //
