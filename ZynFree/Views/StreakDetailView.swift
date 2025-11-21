@@ -161,7 +161,7 @@ struct StreakDetailView: View {
                         }) {
                             HStack {
                                 Image(systemName: "checkmark.circle.fill")
-                                Text("End Streak")
+                                Text("I caved like a bitch")
                             }
                             .font(.headline)
                             .fontWeight(.semibold)
