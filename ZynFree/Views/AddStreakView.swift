@@ -1,5 +1,5 @@
 //
-//  OnboardingView.swift
+//  AddStreakView.swift
 //  ZynFree
 //
 //  Created by Alexander Gonzalez on 11/20/25.
@@ -7,31 +7,53 @@
 
 import SwiftUI
 
-struct OnboardingView: View {
+struct AddStreakView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var viewModel = OnboardingViewModel()
-    @Binding var hasCompletedOnboarding: Bool
+    @Environment(\.dismiss) var dismiss
+    @State private var viewModel = AddStreakViewModel()
+    var hasCompletedOnboarding: Binding<Bool>?
+    let onSave: ((Set<String>, Date, Int, Double) -> Void)?
+    
+    // Initializer for onboarding mode
+    init(hasCompletedOnboarding: Binding<Bool>) {
+        self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.onSave = nil
+    }
+    
+    // Initializer for adding new streak mode
+    init(onSave: @escaping (Set<String>, Date, Int, Double) -> Void) {
+        self.hasCompletedOnboarding = nil
+        self.onSave = onSave
+    }
+    
+    private var isOnboarding: Bool {
+        hasCompletedOnboarding != nil
+    }
     
     var body: some View {
-        ScrollView {
+        NavigationStack {
+            ScrollView {
             VStack(spacing: AppTheme.spacingLarge) {
                 // Header
                 VStack(spacing: AppTheme.spacingSmall) {
                     QuitIcon(size: 100)
                         .padding(.bottom, AppTheme.spacingSmall)
                     
-                    Text("Welcome to ZynFree")
+                    Text(viewModel.title)
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(AppTheme.textColor(for: colorScheme))
                         .multilineTextAlignment(.center)
                     
-                    Text("Let's set up your journey")
+                    Text(viewModel.subtitle)
                         .font(.subheadline)
                         .foregroundColor(AppTheme.secondaryTextColor(for: colorScheme))
                 }
                 .padding(.top, AppTheme.spacingXLarge)
                 .padding(.bottom, AppTheme.spacing)
+                .onAppear {
+                    viewModel.isOnboarding = isOnboarding
+                }
                 
                 // Addiction Selection
                 VStack(alignment: .leading, spacing: AppTheme.spacing) {
@@ -57,10 +79,6 @@ struct OnboardingView: View {
                 
                 // Quit Date
                 VStack(alignment: .leading, spacing: AppTheme.spacing) {
-                    Text("When did you quit?")
-                        .font(.headline)
-                        .foregroundColor(AppTheme.textColor(for: colorScheme))
-                    
                     DatePicker(
                         "Quit Date",
                         selection: $viewModel.quitDate,
@@ -109,8 +127,17 @@ struct OnboardingView: View {
                 
                 // Complete Button
                 Button(action: {
-                    viewModel.completeOnboarding()
-                    hasCompletedOnboarding = true
+                    let unitsPerWeek = Int(viewModel.unitsPerWeek) ?? 0
+                    let costPerUnit = Double(viewModel.costPerUnit) ?? 0.0
+                    
+                    if isOnboarding {
+                        viewModel.completeOnboarding()
+                        hasCompletedOnboarding?.wrappedValue = true
+                    } else {
+                        onSave?(viewModel.selectedAddictions, viewModel.quitDate, unitsPerWeek, costPerUnit)
+                        viewModel.reset()
+                        dismiss()
+                    }
                 }) {
                     Text("Start Tracking")
                         .font(.headline)
@@ -126,8 +153,21 @@ struct OnboardingView: View {
                 Spacer(minLength: AppTheme.spacingLarge)
             }
             .padding(AppTheme.spacing)
+            }
+            .background(AppTheme.backgroundColor(for: colorScheme))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if viewModel.showCancelButton {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Cancel") {
+                            viewModel.reset()
+                            dismiss()
+                        }
+                        .foregroundColor(AppTheme.textColor(for: colorScheme))
+                    }
+                }
+            }
         }
-        .background(AppTheme.backgroundColor(for: colorScheme))
     }
 }
 
@@ -169,6 +209,6 @@ struct AddictionSelectionCard: View {
 }
 
 #Preview {
-    OnboardingView(hasCompletedOnboarding: .constant(false))
+    AddStreakView(hasCompletedOnboarding: .constant(false))
 }
 

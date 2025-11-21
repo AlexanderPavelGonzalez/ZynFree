@@ -11,34 +11,33 @@ class LocalDataStore {
     static let shared = LocalDataStore()
     
     private let userDefaults = UserDefaults.standard
-    private let addictionDataKey = "addictionData"
+    private let streakStoreKey = "streakStore"
     
     private init() {}
     
-    func save(_ data: AddictionData) {
-        if let encoded = try? JSONEncoder().encode(data) {
-            userDefaults.set(encoded, forKey: addictionDataKey)
+    // MARK: - StreakStore
+    
+    func saveStreakStore(_ store: StreakStore) {
+        if let encoded = try? JSONEncoder().encode(store) {
+            userDefaults.set(encoded, forKey: streakStoreKey)
         }
     }
     
-    func load() -> AddictionData? {
-        guard let data = userDefaults.data(forKey: addictionDataKey),
-              let decoded = try? JSONDecoder().decode(AddictionData.self, from: data) else {
-            return nil
+    func loadStreakStore() -> StreakStore {
+        guard let data = userDefaults.data(forKey: streakStoreKey),
+              let decoded = try? JSONDecoder().decode(StreakStore.self, from: data) else {
+            // Return empty store if none exists
+            return StreakStore()
         }
         return decoded
     }
     
-    func update(_ data: AddictionData) {
-        save(data)
+    func updateStreakStore(_ store: StreakStore) {
+        saveStreakStore(store)
     }
     
-    func delete() {
-        userDefaults.removeObject(forKey: addictionDataKey)
-    }
-    
-    func hasCompletedOnboarding() -> Bool {
-        return load() != nil
+    func deleteStreakStore() {
+        userDefaults.removeObject(forKey: streakStoreKey)
     }
 }
 
